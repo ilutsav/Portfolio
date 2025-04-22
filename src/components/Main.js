@@ -89,30 +89,33 @@ const MainForm = () => {
             className="relative overflow-hidden py-24"
           >
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-center"
-              >
-                <h1 className="text-5xl md:text-6xl font-bold mb-6">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                    Utsav Bhattarai
-                  </span>
-                </h1>
-                <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                  Crafting modern, responsive, and accessible web experiences with
-                  cutting-edge technologies.
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => scrollToSection("projects")}
-                >
-                  View My Work
-                </motion.button>
-              </motion.div>
+            <motion.div
+  ref={home}
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 1 }}
+  className="relative overflow-hidden py-24"
+>
+
+  <div className="container mx-auto px-4 text-center">
+    <h1 className="text-4xl md:text-6xl font-bold mb-4">
+      Hello, I’m <span className="text-blue-500">Utsav</span>
+    </h1>
+    <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+    Crafting modern, responsive, and accessible web experiences with
+    cutting-edge technologies.
+    </p>
+    <div className="mt-6">
+      <button
+        onClick={() => scrollToSection("contact")}
+        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-300"
+      >
+        Get In Touch
+      </button>
+    </div>
+  </div>
+</motion.div>
+
             </div>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMjIiIGZpbGwtb3BhY2l0eT0iMC4wNCI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0xMnY2aDZ2LTZoLTZ6bTEyIDEydjZoNnYtNmgtNnptMC0xMnY2aDZ2LTZoLTZ6bS0yNCAwdjZoNnYtNmgtNnptMC0xMnY2aDZ2LTZoLTZ6bTEyIDB2Nmg2di02aC02em0wLTEydjZoNnYtNmgtNnptLTEyIDB2Nmg2di02aC02eiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
           </motion.div>

@@ -36,7 +36,7 @@ const ContactForm = () => {
           alert("Your message has been sent!");
         },
         (error) => {
-          console.error("Error sending email:", error.text);
+          console.log("Error sending email:", error.text);
           alert("There was an error sending your message.");
         }
       );

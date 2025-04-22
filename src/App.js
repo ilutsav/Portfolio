@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import MainForm from "./components/Main";
-import { ClimbingBoxLoader, GridLoader, HashLoader, MoonLoader, PacmanLoader, PuffLoader, PulseLoader, RingLoader, RiseLoader, RotateLoader } from "react-spinners";
+import { ClimbingBoxLoader } from "react-spinners";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
