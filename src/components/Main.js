@@ -1,418 +1,436 @@
-import React, { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import ContactForm from "./widgets/ContactForm";
 import SocialLinks from "./widgets/SocialLink";
-
-
+import utsav from "../assets/images/utsav.jpeg";
+import { colorTheme } from '../theme.js';
+import Home from "./widgets/Home.js";
 
 const MainForm = () => {
+  const [activeTab, setActiveTab] = useState("home");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  
+  // Refs for sections
+  const homeRef = useRef(null);
+  const aboutRef = useRef(null);
+  const skillsRef = useRef(null);
+  const projectsRef = useRef(null);
+  const contactRef = useRef(null);
 
-      const [activeTab, setActiveTab] = useState("about");
-    
-      // Create refs for each section
-      const aboutRef = useRef(null);
-      const skillsRef = useRef(null);
-      const projectsRef = useRef(null);
-      const contactRef = useRef(null);
-      const home = useRef(null);
-    
-      // Function to scroll to section
-      const scrollToSection = (section) => {
-        setActiveTab(section);
-    
-        let ref;
-        switch (section) {
-          case "home":
-            ref = home;
-            break;
-          case "about":
-            ref = aboutRef;
-            break;
-          case "skills":
-            ref = skillsRef;
-            break;
-          case "projects":
-            ref = projectsRef;
-            break;
-          case "contact":
-            ref = contactRef;
-            break;
-          default:
-            ref = aboutRef;
-        }
-    
-        // Smooth scroll to the section
-        ref.current.scrollIntoView({ behavior: "smooth" });
-      };
-    
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white font-sans">
-          {/* Navigation Bar */}
-          <nav className="sticky top-0 z-10 backdrop-blur-md bg-gray-900/80 border-b border-gray-700">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between h-16">
-                <div className="flex items-center">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500"
-                  >
-                    DevPortfolio
-                  </motion.div>
-                </div>
-                <div className="hidden md:flex items-center space-x-8">
-                  {["about", "skills", "projects", "contact"].map((item) => (
-                    <motion.button
-                      key={item}
-                      whileHover={{ y: -2 }}
-                      className={`capitalize transition-colors ${
-                        activeTab === item
-                          ? "text-blue-400 border-b-2 border-blue-400"
-                          : "text-gray-300 hover:text-blue-300"
-                      }`}
-                      onClick={() => scrollToSection(item)}
-                    >
-                      {item}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </nav>
-    
-          {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="relative overflow-hidden py-24"
-          >
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <motion.div
-  ref={home}
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 1 }}
-  className="relative overflow-hidden py-24"
->
+  // Projects data
+  const data = [
+    { name: "Quick Samachar", tags: ["Flutter", "Provider", "Firebase", "REST API"] },
+    { name: "Medha App", tags: ["Flutter", "BLoC", "Firebase", "Cloud Firestore"] },
+    { name: "QuickXtract", tags: ["React", "Django"] },
+  ];
 
-  <div className="container mx-auto px-4 text-center">
-    <h1 className="text-4xl md:text-6xl font-bold mb-4">
-      Hello, I’m <span className="text-blue-500">Utsav</span>
-    </h1>
-    <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-    Crafting modern, responsive, and accessible web experiences with
-    cutting-edge technologies.
-    </p>
-    <div className="mt-6">
-      <button
-        onClick={() => scrollToSection("contact")}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-300"
+  // Get scroll position
+  const { scrollY } = useScroll();
+  
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    // Update navbar background on scroll
+    setIsScrolled(latest > 50);
+    
+    // Find the active section based on scroll position
+    const sections = [
+      { id: "home", ref: homeRef },
+      { id: "about", ref: aboutRef },
+      { id: "skills", ref: skillsRef },
+      { id: "projects", ref: projectsRef },
+      { id: "contact", ref: contactRef }
+    ];
+    
+    // Get the positions of all sections and determine which one is in view
+    const currentSection = sections.reduce((active, section) => {
+      if (!section.ref.current) return active;
+      
+      const rect = section.ref.current.getBoundingClientRect();
+      // Section is considered active if its top is within viewport or if it's the first section and we're at the top
+      const isInView = (rect.top <= 150 && rect.bottom >= 150) || 
+                        (section.id === "home" && rect.top > -rect.height/2);
+      
+      return isInView ? section.id : active;
+    }, activeSection);
+    
+    if (currentSection !== activeSection) {
+      setActiveSection(currentSection);
+      setActiveTab(currentSection);
+    }
+  });
+
+  // Scroll to section function
+  const scrollToSection = (section) => {
+    setActiveTab(section);
+    setIsMobileMenuOpen(false);
+    
+    let ref;
+    switch (section) {
+        case "home": ref = homeRef; break;
+        case "about": ref = aboutRef; break;
+        case "skills": ref = skillsRef; break;
+        case "projects": ref = projectsRef; break;
+        case "contact": ref = contactRef; break;
+        default: ref = homeRef;
+    }
+    
+    if (ref && ref.current) {
+        ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  return (
+    <div className={`min-h-screen ${colorTheme.bgGradient} ${colorTheme.textBody} font-sans`}>
+      {/* Enhanced Navigation Bar with scroll-aware styling */}
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? `backdrop-blur-lg shadow-md ${colorTheme.bgNavbar} border-b ${colorTheme.borderStandard}` 
+            : 'bg-transparent'
+        }`}
       >
-        Get In Touch
-      </button>
-    </div>
-  </div>
-</motion.div>
-
-            </div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMjIiIGZpbGwtb3BhY2l0eT0iMC4wNCI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0xMnY2aDZ2LTZoLTZ6bTEyIDEydjZoNnYtNmgtNnptMC0xMnY2aDZ2LTZoLTZ6bS0yNCAwdjZoNnYtNmgtNnptMC0xMnY2aDZ2LTZoLTZ6bTEyIDB2Nmg2di02aC02em0wLTEydjZoNnYtNmgtNnptLTEyIDB2Nmg2di02aC02eiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
-          </motion.div>
-    
-          {/* About Section */}
-          <motion.section
-            ref={aboutRef}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="py-16 bg-gray-800/30"
-            id="about"
-          >
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="lg:flex lg:items-center lg:justify-between">
-                <div className="lg:w-1/2">
-                  <motion.h2
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="text-3xl font-bold mb-6 inline-block border-b-2 border-blue-400 pb-1"
-                  >
-                    About Me
-                  </motion.h2>
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                  >
-                    <p className="text-gray-300 mb-4">
-                      Hi, I’m Utsav Bhattarai, a Flutter and Web Developer
-                      passionate about crafting high-quality mobile and web
-                      applications. I have extensive experience in Flutter, working
-                      with state management solutions like Provider and GetX,
-                      database handling with Drift and Shared Preferences, and API
-                      integrations using Dio and GetIt. My work includes building
-                      and maintaining QuickSamachar, a feature-rich news app
-                      integrating polls, horoscopes, short videos, and bookmarking.
-                    </p>
-                    <p className="text-gray-300 mb-6">
-                      In addition to mobile development, I’m expanding my expertise
-                      in web development, focusing on React and JavaScript to create
-                      fast, responsive, and user-friendly web applications. I enjoy
-                      working with modern front-end technologies and continuously
-                      improving my skills to stay up-to-date with industry trends.
-                    </p>
-                    <ul className="space-y-2 text-gray-300">
-                      <li className="flex items-center">
-                        <span className="mr-2 text-blue-400">▹</span>
-                        <span>Full-stack Development</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="mr-2 text-blue-400">▹</span>
-                        <span>Responsive Design</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="mr-2 text-blue-400">▹</span>
-                        <span>UI/UX Implementation</span>
-                      </li>
-                    </ul>
-                  </motion.div>
-                </div>
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="mt-10 lg:mt-0 lg:w-5/12"
-                >
-                  <div className="relative mx-auto w-64 h-64 rounded-full overflow-hidden border-4 border-blue-400/30 shadow-xl shadow-blue-500/10">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20"></div>
-                    <div className="flex items-center justify-center h-full">
-                      <img
-                        src="/utsav.jpeg" // Replace with your actual image path
-                        alt="Utsav Bhattarai"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </motion.section>
-    
-          {/* Skills Section */}
-          <motion.section
-            ref={skillsRef}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="py-16"
-            id="skills"
-          >
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <motion.h2
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-3xl font-bold mb-12 text-center inline-block border-b-2 border-blue-400 pb-1"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              {/* Logo with enhanced animation */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                transition={{ duration: 0.6 }}
+                className={`text-xl font-bold text-transparent bg-clip-text ${colorTheme.gradientAccentText} cursor-pointer`}
+                onClick={() => scrollToSection("home")}
               >
-                Skills & Expertise
-              </motion.h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {[
-                  { name: "Flutter", level: 95 },
-                  { name: "React", level: 80 },
-                  { name: "JavaScript", level: 85 },
-                  { name: "TypeScript", level: 70 },
-                  { name: "Tailwind CSS", level: 65 },
-                ].map((skill, index) => (
-                  <motion.div
-                    key={skill.name}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    whileHover={{
-                      y: -5,
-                      boxShadow: "0 10px 20px -5px rgba(59, 130, 246, 0.3)",
-                    }}
-                    className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700"
-                  >
-                    <h3 className="font-semibold mb-3 text-lg">{skill.name}</h3>
-                    <div className="w-full bg-gray-700 rounded-full h-2.5">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${skill.level}%` }}
-                        transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
-                        className="bg-gradient-to-r from-blue-400 to-purple-500 h-2.5 rounded-full"
-                      ></motion.div>
-                    </div>
-                    <div className="mt-2 text-right text-sm text-gray-400">
-                      {skill.level}%
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                DevPortfolio
+              </motion.div>
             </div>
-          </motion.section>
-    
-          {/* Projects Section */}
-          <motion.section
-            ref={projectsRef}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="py-16 bg-gray-800/30"
-            id="projects"
-          >
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <motion.h2
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-3xl font-bold mb-12 text-center inline-block border-b-2 border-blue-400 pb-1"
-              >
-                Featured Projects
-              </motion.h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[
-                  {
-                    name: "Quick Samachar",
-                    description:
-                      "Quick Samachar is a feature-rich news app that delivers the latest updates with a seamless user experience. It includes polls, horoscopes, short videos, and a bookmarking feature, making it an all-in-one platform for staying informed.",
-                  },
-                  { name: "Medha App", description: "Medha is a comprehensive school management system designed to streamline academic and administrative operations. It provides features like student enrollment, attendance tracking, fee management, exam scheduling, and communication tools, making school management more efficient and organized." },
-                  { name: "QuickXtract", description: "Quick Xtract is a smart data extraction tool designed to efficiently retrieve and process information from various sources. It helps automate data collection, analysis, and organization, making workflows faster and more accurate." },
-                ].map((project) => (
-                  <motion.div
-                    key={project}
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6, delay: project * 0.2 }}
-                    whileHover={{ y: -10 }}
-                    className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700 flex flex-col"
-                  >
-                    <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-600/20 flex items-center justify-center">
-                      <div className="text-5xl">🚀</div>
-                    </div>
-                    <div className="p-6 flex-grow">
-                      <h3 className="text-xl font-semibold mb-2">{project.name}</h3>
-                      <p className="text-gray-400 mb-4">
-                       {project.description}
-                      </p>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
-                          React
-                        </span>
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
-                          Node.js
-                        </span>
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
-                          Tailwind
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-4 border-t border-gray-700 flex justify-between">
-                      <a
-                        href="#"
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
-                      >
-                        View Live
-                      </a>
-                      <a
-                        href="#"
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
-                      >
-                        Source Code
-                      </a>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="text-center mt-12">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 bg-gray-800 text-blue-400 font-semibold rounded-lg border border-blue-400/30 hover:bg-blue-400/10 transition-all duration-300"
-                >
-                  View All Projects
-                </motion.button>
-              </div>
-            </div>
-          </motion.section>
-    
-          {/* Contact Section */}
-          <motion.section
-            ref={contactRef}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="py-16"
-            id="contact"
-          >
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-              <motion.h2
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-3xl font-bold mb-8 text-center inline-block border-b-2 border-blue-400 pb-1"
-              >
-                Get In Touch
-              </motion.h2>
             
-              <ContactForm />
-    <SocialLinks />
-    
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              {["home", "about", "skills", "projects", "contact"].map((item) => (
+                <motion.button
+                  key={item}
+                  whileHover={{ y: -2 }} 
+                  whileTap={{ scale: 0.95 }}
+                  className={`capitalize transition-colors text-sm font-medium px-1 py-2 ${
+                    activeTab === item
+                      ? `${colorTheme.textAccent} border-b-2 ${colorTheme.borderNavActive}` 
+                      : `${colorTheme.textSubtle} hover:${colorTheme.textAccentHover}`
+                  }`}
+                  onClick={() => scrollToSection(item)}
+                >
+                  {item}
+                </motion.button>
+              ))}
             </div>
-          </motion.section>
-    
-          {/* Footer */}
-          <footer className="py-8 bg-gray-900 border-t border-gray-800">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col md:flex-row justify-between items-center">
-                <div className="text-gray-400 mb-4 md:mb-0">
-                  © {new Date().getFullYear()} DevPortfolio. All rights reserved.
-                </div>
-                <div className="flex space-x-6">
-                  <a
-                    href="#about"
-                    className="text-gray-400 hover:text-blue-400 transition-colors"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection("about");
-                    }}
-                  >
-                    About
-                  </a>
-                  <a
-                    href="#projects"
-                    className="text-gray-400 hover:text-blue-400 transition-colors"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection("projects");
-                    }}
-                  >
-                    Projects
-                  </a>
-                  <a
-                    href="#contact"
-                    className="text-gray-400 hover:text-blue-400 transition-colors"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection("contact");
-                    }}
-                  >
-                    Contact
-                  </a>
-                </div>
-              </div>
-              <div className="mt-6 text-center text-sm text-gray-500">
-                Made with React & Tailwind CSS
-              </div>
+            
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`p-2 rounded-md ${isScrolled ? colorTheme.textPrimary : colorTheme.textAccent}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
             </div>
-          </footer>
+          </div>
         </div>
-      );
+        
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`md:hidden ${colorTheme.bgNavbar} border-b ${colorTheme.borderStandard}`}
+          >
+            <div className="px-4 pt-2 pb-3 space-y-1 sm:px-3">
+              {["home", "about", "skills", "projects", "contact"].map((item) => (
+                <motion.button
+                  key={item}
+                  whileTap={{ scale: 0.95 }}
+                  className={`w-full text-left block px-3 py-2 rounded-md text-base font-medium capitalize ${
+                    activeTab === item
+                    ? `${colorTheme.bgAccentLight} ${colorTheme.textAccent}`
+                    : `${colorTheme.textSubtle} hover:${colorTheme.bgAccentLight} hover:${colorTheme.textAccentHover}`
+                  }`}
+                  onClick={() => scrollToSection(item)}
+                >
+                  {item}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </motion.nav>
 
-    
-}
+      {/* Hero Section */}
+      <Home 
+        scrollToSection={scrollToSection} 
+        colorTheme={colorTheme} 
+        ref={homeRef}
+      />
+      {/* About Section - Enhanced with intersection animations */}
+      <motion.section
+        ref={aboutRef} id="about"
+        initial={{ opacity: 0 }} 
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className={`py-20 md:py-28 ${colorTheme.bgSectionAlt}`}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:flex lg:items-center lg:justify-between gap-12">
+            <div className="lg:w-1/2 order-2 lg:order-1">
+              <motion.h2
+                initial={{ x: -50, opacity: 0 }} 
+                whileInView={{ x: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className={`text-3xl font-bold mb-6 ${colorTheme.textPrimary} inline-block border-b-4 ${colorTheme.borderAccent} pb-2`}
+              >
+                About Me
+              </motion.h2>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }} 
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className={`${colorTheme.textSecondary} space-y-4`}
+              >
+                <p>Hi, I'm Utsav Bhattarai, a Flutter and Web Developer passionate about crafting high-quality mobile and web applications. I have extensive experience in Flutter, working with state management solutions like Provider and GetX, database handling with Drift and Shared Preferences, and API integrations using Dio and GetIt. My work includes building and maintaining QuickSamachar, a feature-rich news app integrating polls, horoscopes, short videos, and bookmarking.</p>
+                <p>In addition to mobile development, I'm expanding my expertise in web development, focusing on React and JavaScript to create fast, responsive, and user-friendly web applications. I enjoy working with modern front-end technologies and continuously improving my skills to stay up-to-date with industry trends.</p>
+                <ul className="space-y-2 pt-2">
+                  <li className="flex items-center">
+                    <span className={`mr-2 ${colorTheme.textAccent} text-xl`}>▹</span>
+                    <span>Full-stack Development Capabilities</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className={`mr-2 ${colorTheme.textAccent} text-xl`}>▹</span>
+                    <span>Responsive & Adaptive Design</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className={`mr-2 ${colorTheme.textAccent} text-xl`}>▹</span>
+                    <span>Intuitive UI/UX Implementation</span>
+                  </li>
+                </ul>
+              </motion.div>
+            </div>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }} 
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-10 lg:mt-0 lg:w-5/12 flex justify-center order-1 lg:order-2"
+            >
+              {/* Enhanced image container with floating animation */}
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, repeatType: "reverse" }}
+                className={`relative mx-auto w-64 h-64 md:w-72 md:h-72 rounded-full overflow-hidden border-4 ${colorTheme.borderAccentLight}/50 ${colorTheme.shadowImage}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-100/10 via-transparent to-purple-100/10"></div>
+                <img src={utsav} alt="Utsav Bhattarai" className="w-full h-full object-cover" />
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Skills Section - Improved layout and responsiveness */}
+      <motion.section
+        ref={skillsRef} id="skills"
+        initial={{ opacity: 0 }} 
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="py-20 md:py-28"
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.h2
+            initial={{ y: -30, opacity: 0 }} 
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className={`text-3xl font-bold mb-12 text-center ${colorTheme.textPrimary}`}
+          >
+            Skills & Expertise
+            <span className={`block w-20 h-1 ${colorTheme.gradientAccentBar} mx-auto mt-2 rounded`}></span>
+          </motion.h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8 text-center">
+            {[
+              { name: "Flutter", level: 95 }, { name: "React", level: 80 },
+              { name: "JavaScript", level: 85 }, { name: "TypeScript", level: 70 },
+              { name: "Tailwind CSS", level: 65 },
+            ].map((skill, index) => (
+              <motion.div
+                key={skill.name}
+                initial={{ y: 20, opacity: 0 }} 
+                whileInView={{ y: 0, opacity: 1 }} 
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                whileHover={{ y: -8, boxShadow: "0 15px 30px -10px rgba(100, 116, 139, 0.2)" }}
+                className={`${colorTheme.bgCard} rounded-lg p-6 shadow-md border ${colorTheme.borderCard}/80 transition-all duration-300`}
+              >
+                <h3 className={`font-semibold mb-3 text-lg ${colorTheme.textBody}`}>{skill.name}</h3>
+                <div className={`w-full ${colorTheme.bgSkillBarTrack} rounded-full h-2.5`}>
+                  <motion.div
+                    initial={{ width: 0 }} 
+                    whileInView={{ width: `${skill.level}%` }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                    className={`${colorTheme.gradientAccentBar} h-2.5 rounded-full`}
+                  ></motion.div>
+                </div>
+                <div className={`mt-2 text-right text-sm ${colorTheme.textSubtle}`}>{skill.level}%</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Projects Section - Enhanced with staggered animations */}
+      <motion.section
+        ref={projectsRef} id="projects"
+        initial={{ opacity: 0 }} 
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className={`py-20 md:py-28 ${colorTheme.bgSectionAlt}`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.h2
+            initial={{ y: -30, opacity: 0 }} 
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className={`text-3xl font-bold mb-12 text-center ${colorTheme.textPrimary}`}
+          >
+            Featured Projects
+            <span className={`block w-20 h-1 ${colorTheme.gradientAccentBar} mx-auto mt-2 rounded`}></span>
+          </motion.h2>
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {data.map((project, index) => (
+              <motion.div
+                key={project.name}
+                initial={{ y: 50, opacity: 0 }} 
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: index * 0.15 }}
+                whileHover={{ y: -10, boxShadow: "0 20px 40px -15px rgba(100, 116, 139, 0.25)" }}
+                className={`${colorTheme.bgCard} rounded-lg overflow-hidden ${colorTheme.shadowCard} border ${colorTheme.borderCard} flex flex-col transition-all duration-300 ${colorTheme.shadowCardHover}`}
+              >
+                {/* Improved project card with hover effect */}
+                <div className={`h-48 ${colorTheme.bgPlaceholder} flex items-center justify-center relative group overflow-hidden`}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <motion.span 
+                    whileHover={{ scale: 1.2, rotate: 5 }}
+                    className="text-6xl filter grayscale opacity-30 group-hover:opacity-70 transition-all duration-300"
+                  >
+                    {index === 0 ? '📱' : index === 1 ? '🏫' : '📄'}
+                  </motion.span>
+                </div>
+                <div className="p-6 flex-grow flex flex-col">
+                  <h3 className={`text-xl font-semibold mb-2 ${colorTheme.textPrimary}`}>{project.name}</h3>
+                  <p className={`${colorTheme.textSubtle} mb-4 text-sm flex-grow`}>
+                    {project.name === "Quick Samachar" 
+                      ? "A feature-rich Flutter news application with personalized content, interactive polls, and media integration." 
+                      : project.name === "Medha App" 
+                      ? "An educational platform built with Flutter, providing students with course materials, assessments, and progress tracking."
+                      : "A document data extraction tool using React and TensorFlow.js for automated information processing."}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4 mt-auto pt-4 border-t border-gray-100">
+                    {project.tags.map((tag) => (
+                      <span key={tag}
+                        className={`px-3 py-1 ${colorTheme.bgTag} ${colorTheme.textTag} rounded-full text-xs font-medium`}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Contact Section - Improved layout */}
+      <motion.section
+        ref={contactRef} id="contact"
+        initial={{ opacity: 0 }} 
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="py-20 md:py-28"
+      >
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.h2
+            initial={{ y: -30, opacity: 0 }} 
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className={`text-3xl font-bold mb-10 text-center ${colorTheme.textPrimary}`}
+          >
+            Get In Touch
+            <span className={`block w-20 h-1 ${colorTheme.gradientAccentBar} mx-auto mt-2 rounded`}></span>
+          </motion.h2>
+
+          <motion.div
+            initial={{ y: 30, opacity: 0 }} 
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2}}
+            className={`${colorTheme.bgCard} p-6 sm:p-8 rounded-lg ${colorTheme.shadowCard} border ${colorTheme.borderCard}/80 mb-10`}
+          >
+            <ContactForm />
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 30, opacity: 0 }} 
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4}}
+          >
+            <SocialLinks />
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Footer - Improved spacing */}
+      <footer className={`py-8 ${colorTheme.bgFooter} border-t ${colorTheme.borderStandard}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className={`${colorTheme.textSubtle} mb-4 md:mb-0 text-sm`}>
+              Designed & Built by Utsav Bhattarai ✨
+            </div>
+            <div className="flex space-x-6">
+              {["home","about", "skills", "projects", "contact"].map((item) => (
+                <button
+                  key={item}
+                  className={`${colorTheme.textSubtle} hover:${colorTheme.textAccentHover} transition-colors text-sm capitalize`}
+                  onClick={() => scrollToSection(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+       
+        </div>
+      </footer>
+    </div>
+  );
+};
 
 export default MainForm;

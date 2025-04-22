@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 const SocialLinks = () => {
   const socialLinks = [
     { platform: "github", url: "https://github.com/ilutsav", icon: <FaGithub /> },
-    { platform: "linkedin", url: "https://linkedin.com/in/ilutsav", icon: <FaLinkedin /> },
-    { platform: "email", url: "mailto:ilutsav@example.com", icon: <FaEnvelope /> },
+    { platform: "linkedin", url: "https://www.linkedin.com/in/utsav-bhattarai-843713227/", icon: <FaLinkedin /> },
+    { platform: "email", url: "mailto:ilutsav@gmail.com", icon: <FaEnvelope /> },
   ];
 
   return (
