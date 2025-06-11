@@ -1,8 +1,9 @@
 // src/components/widgets/ChatBot.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { motion } from "framer-motion";
 import { Send, X } from "lucide-react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+
 
 // --- IMPORTANT: Replace with your actual Gemini API key ---
 
@@ -15,7 +16,8 @@ const ChatBot = ({ onClose }) => {
   ]);
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [runTour, setRunTour] = useState(true);
+  const messagesEndRef = useRef(null);
+
 
   const yourDetails = `
 You are a chatbot named UtsavBot. You have information about Utsav Bhattarai, a Mobile Application Developer (Flutter). He is also open to part-time or contract web projects. Here are his details:
@@ -68,6 +70,11 @@ If asked about his girlfriend, respond with a cheeky line like:
 
 Now, answer the user's question based on this information. If the question is not related to Utsav's skills or experience, you can politely say you can only answer questions about him.
 `;
+
+
+useEffect(() => {
+  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages, isGenerating]);
 
   const handleSend = async (maxRetries = 3, initialDelay = 4000) => {
     if (!input.trim()) return;
@@ -152,80 +159,12 @@ Now, answer the user's question based on this information. If the question is no
     }
   };
 
-  // return (
-  //   <motion.div
-  //     initial={{ opacity: 0, y: 100 }}
-  //     animate={{ opacity: 1, y: 0 }}
-  //     transition={{ duration: 0.3 }}
-  //     className="fixed bottom-4 right-4 w-80 bg-white rounded-2xl shadow-xl z-50 flex flex-col overflow-hidden border border-gray-200"
-  //   >
-  //     {/* Header */}
-  //     <div className="bg-indigo-600 text-white px-4 py-3 font-semibold text-lg flex justify-between items-center">
-  //       <span>UtsavBot</span>
-  //       <div className="space-x-2">
-  //         <button
-  //           onClick={onClose}
-  //           className="hover:text-gray-200"
-  //           title="Close"
-  //         >
-  //           <X size={18} />
-  //         </button>
-  //       </div>
-  //     </div>
-
-  //     <>
-  //       {/* Messages */}
-  //       <div className="flex-1 p-4 space-y-2 overflow-y-auto max-h-64 bg-gray-50">
-  //         {messages.map((msg, i) => (
-  //           <div
-  //             key={i}
-  //             className={`text-sm px-3 py-2 rounded-xl max-w-[80%] ${
-  //               msg.sender === "bot"
-  //                 ? "bg-gray-200 text-gray-800 self-start"
-  //                 : "bg-indigo-500 text-white self-end ml-auto"
-  //             }`}
-  //           >
-  //             {msg.text}
-  //           </div>
-  //         ))}
-  //         {isGenerating && (
-  //           <div className="text-sm px-3 py-2 rounded-xl bg-gray-200 text-gray-800 self-start animate-pulse w-fit">
-  //             Thinking...
-  //           </div>
-  //         )}
-  //       </div>
-
-  //       {/* Input */}
-  //       <div className="flex border-t p-2 bg-white">
-  //         <input
-  //           className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-  //           placeholder="Type your message..."
-  //           value={input}
-  //           onChange={(e) => setInput(e.target.value)}
-  //           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-  //           disabled={isGenerating}
-  //         />
-  //         <button
-  //           onClick={handleSend}
-  //           className={`p-2 rounded-lg transition-colors ${
-  //             isGenerating
-  //               ? "bg-gray-400 cursor-not-allowed"
-  //               : "bg-indigo-500 hover:bg-indigo-600"
-  //           } text-white`}
-  //           disabled={isGenerating}
-  //         >
-  //           <Send size={16} />
-  //         </button>
-  //       </div>
-  //     </>
-  //   </motion.div>
-  // );
   return (
     <motion.div
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-4 right-4 w-80 bg-white rounded-2xl shadow-xl z-50 flex flex-col overflow-hidden border border-gray-200"
+      className="fixed bottom-4 right-4 w-120 bg-white rounded-2xl shadow-xl z-50 flex flex-col overflow-hidden border border-gray-200"
     >
       {/* Header */}
       <header className="bg-indigo-600 text-white px-5 py-4 font-semibold text-lg flex justify-between items-center shadow-md">
@@ -255,10 +194,13 @@ Now, answer the user's question based on this information. If the question is no
           </div>
         ))}
         {isGenerating && (
-          <div className="text-sm px-4 py-3 rounded-2xl bg-gray-200 text-gray-800 self-start animate-pulse w-fit">
-            Thinking...
-          </div>
+       <div className="text-sm px-4 py-3 rounded-2xl bg-gray-200 text-gray-800 self-start w-fit animate-pulse">
+       Typing<span className="typing-dots" />
+     </div>
+     
         )}
+        <div ref={messagesEndRef} />
+
       </section>
   
       {/* Input */}
